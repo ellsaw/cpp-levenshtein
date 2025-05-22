@@ -4,50 +4,40 @@
 
 using namespace std;
 
-struct Memo {
-    string strA;
-    string strB;
-    int lev;
-};
 
-char headOf(string arg){
-    return arg[0];
-} // Caclulating the head(str) part of the equation
-
-string tailOf(string arg){
-    return arg.erase(0, 1);
-} // Caclulating the tail(str) part of the equation
-
-int levenshtein(const string& strA, const string& strB, vector<Memo>& memo){
-    for(const Memo mI : memo){
-        if((mI.strA == strA && mI.strB == strB) || (mI.strB == strA && mI.strA == strB)){
-            return mI.lev;
-        };
-    } // memoization control
-
-    int result = 0; // Result integer to store the result and to memoize
-
-
-    if(strB.length() == 0){
-        result = strA.length();
-    }else if(strA.length() == 0){
-        result = strB.length();
-    }else if (headOf(strA) == headOf(strB)){
-        result = levenshtein(tailOf(strA), tailOf(strB), memo);
-    }else{
-        result = 1 + min(
+int lev(vector<vector<int>>& matrix, const int& i, const int& j, string& a, string& b){
+    if(min(i, j) == 0){
+        return max(i, j);
+    } else {
+        return min(
             min(
-                levenshtein(tailOf(strA), strB, memo),
-                levenshtein(strA, tailOf(strB), memo)
+                matrix[i - 1][j] + 1,
+                matrix[i][j - 1] + 1
             ),
-            levenshtein(tailOf(strA), tailOf(strB), memo)
+            matrix[i - 1][j - 1] + (a[i - 1] == b[j - 1] ? 0 : 1)
         );
-    } // The actual levenshtein equation
+    };
+} // levenshtein function
 
-    memo.push_back({strA, strB, result}); // Pushing result to memoization vector
 
-    return result;
-}
+int levenshtein(string& strA, string& strB){
+    int rows = strA.length() + 1;
+    int cols = strB.length() + 1;
+
+
+    vector<vector<int>> matrix(rows, vector<int>(cols, 0));
+
+
+    for(int i = 0; i < matrix.size(); i++){
+
+        for(int j = 0; j < matrix[i].size(); j++){
+            matrix[i][j] = lev(matrix, i, j, strA, strB);
+        }
+
+    };
+
+    return matrix[rows - 1][cols - 1];
+} // Function that builds and fills matrix using levenshtein function. Returns last column of last row aka levenshtein distance
 
 int main(){
     string string1;
@@ -59,9 +49,7 @@ int main(){
     cout << "Enter string two: ";
     getline(cin, string2);
 
-    vector<Memo> memo;
-
-    cout << "Levenshtein distance is: " << levenshtein(string1, string2, memo);
+    cout << "Levenshtein distance is: " << levenshtein(string1, string2);
 
     return 0;
 } // Testing function 
